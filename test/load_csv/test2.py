@@ -44,3 +44,17 @@ try:
 	pp.pprint( mypy.load_csv( 'sample2.dat', delimiter = ' ', comment = '#', cast = int ) )
 except Exception as message:
 	print message,
+
+print
+print "=== Delimiter = ' ', comment = '#', cast = int, ignore_conversion_errors = True ==="
+try:
+	pp.pprint( mypy.load_csv( 'sample2.dat', delimiter = ' ', comment = '#', cast = int, ignore_conversion_errors = True ) )
+except Exception as message:
+	print message,
+
+print
+print "=== Delimiter = ' ', comment = '#', cast = int, ignore_conversion_errors = True, skip_empty_entries = 'all', skip_empty_lines = True ==="
+try:
+	pp.pprint( mypy.load_csv( 'sample2.dat', delimiter = ' ', comment = '#', cast = int, ignore_conversion_errors = True, skip_empty_entries = 'all', skip_empty_lines = True ) )
+except Exception as message:
+	print message,

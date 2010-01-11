@@ -1,3 +1,9 @@
+try:
+	import numpy
+	found_numpy = 1
+except ImportError:
+	found_numpy = 0
+
 import csv
 
 class ConversionError( Exception ):
@@ -5,7 +11,8 @@ class ConversionError( Exception ):
 
 def load_csv(
 	file, delimiter = '\t', comment = '', cast = str,
-	skip_empty_lines = False, skip_empty_entries = "none" ):
+	skip_empty_lines = False, skip_empty_entries = "none",
+	out_type = "list", ignore_conversion_errors = False ):
 	"""
 	Args:
 		file: Path to file that needs to be loaded.
@@ -17,9 +24,15 @@ def load_csv(
 			"all": All empty entries will be skipped
 			"ends": Only empty entries at the beginning and end of rows will be skipped
 		cast: Convert data found in file to a specified type. Tested
-			with str, float, int. For float and int, any empty entries
-			will be returned as None. Raises ConversionError if any
-			entry could not be cast successfully.
+			with str, float, int. For float and int, any empty entries will be
+			returned as None. Raises ConversionError if any entry could not be
+			cast successfully.
+		out_type: Possible values:
+			"list": Return list of lists
+			"numpy": Return numpy array if numpy is found. Otherwise return
+				list of lists.
+		ignore_conversion_errors: If True, any fields which could not be
+			successfully casted will be returned as None.
 	
 	Notes:
 		If after skipping empty entries, a line is empty then it will be
@@ -29,10 +42,24 @@ def load_csv(
 		a comment, and will be included in the returned table.
 	
 	Returns:
-		List of lists of strings: All 'words' found in a line are clubbed
-		together in a list. All such lists are then clubbed together and
-		returned.
+		A 2-dimensional "array" containing a table read from the given file.
+		
+		The array is implemented as a list of lists by default. However, you can
+		request the return type to be a numpy array by setting the 'out_type'
+		parameter to "numpy". The datatype of this numpy array will usually be
+		the same as the type of casting requested. However if any of the entries
+		are None, then the datatype will be 'object'.
 	"""
+	if skip_empty_entries not in ( 'none', 'ends', 'all' ):
+		print "Warning: load_csv: 'skip_empty_entries' should be one of",
+		print "'none', 'ends' and 'all'. Assuming 'none'."
+		skip_empty_entries = 'none'
+	
+	if out_type not in ( 'list', 'numpy' ):
+		print "Warning: load_csv: 'out_type' should be one of",
+		print "'list' and 'numpy'. Assuming 'list'."
+		out_type = 'list'
+	
 	reader = csv.reader( open( file ), delimiter = delimiter )
 	
 	line = 0
@@ -52,9 +79,6 @@ def load_csv(
 			for i in range( len( row ) - 1, -1, -1 ):
 				if row[ i ] == '':
 					del row[ i ]
-		elif skip_empty_entries != "none":
-			print "Warning: load_csv: 'skip_empty_entries' should be",
-			print "one of 'none', 'ends' and 'all'. Assuming 'none'."
 		
 		append = True
 		if len( row ) == 0:
@@ -65,16 +89,30 @@ def load_csv(
 		
 		if append:
 			if cast != str:
-				try:
-					row = [ cast( d ) if d != '' else None for d in row ]
-				except ValueError as message:
-					print \
-						"Error loading csv file '" + file + "', line " + str( line ) + ":"
-					print message
-					raise ConversionError
+				cast_row = []
+				for d in row:
+					try:
+						cast_row.append( cast( d ) if d != '' else None )
+					except ValueError as message:
+						if ignore_conversion_errors:
+							cast_row.append( None )
+						else:
+							print \
+								"Error loading csv file '" + file + "', line " + str( line ) + ":"
+							print message
+							raise ConversionError
+				row = cast_row
 			data.append( row[ : ] )
-		
-	return data
+	
+	if out_type == "list":
+		return data
+	else: # out_type == "numpy"
+		if found_numpy:
+			return numpy.array( data )
+		else:
+			print "Warning: load_csv: Did not find numpy package.",
+			print "Returning list of lists."
+			return data
 
 def col( matrix, cols ):
 	if isinstance( cols, int ):
