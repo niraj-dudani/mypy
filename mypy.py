@@ -1,9 +1,3 @@
-try:
-	import numpy
-	found_numpy = 1
-except ImportError:
-	found_numpy = 0
-
 import csv
 
 class ConversionError( Exception ):
@@ -12,7 +6,7 @@ class ConversionError( Exception ):
 def load_csv(
 	file, delimiter = '\t', comment = '', cast = str,
 	skip_empty_lines = False, skip_empty_entries = "none",
-	out_type = "list", ignore_conversion_errors = False ):
+	ignore_conversion_errors = False ):
 	"""
 	Args:
 		file: Path to file that needs to be loaded.
@@ -27,10 +21,6 @@ def load_csv(
 			with str, float, int. For float and int, any empty entries will be
 			returned as None. Raises ConversionError if any entry could not be
 			cast successfully.
-		out_type: Possible values:
-			"list": Return list of lists
-			"numpy": Return numpy array if numpy is found. Otherwise return
-				list of lists.
 		ignore_conversion_errors: If True, any fields which could not be
 			successfully casted will be returned as None.
 	
@@ -54,11 +44,6 @@ def load_csv(
 		print "Warning: load_csv: 'skip_empty_entries' should be one of",
 		print "'none', 'ends' and 'all'. Assuming 'none'."
 		skip_empty_entries = 'none'
-	
-	if out_type not in ( 'list', 'numpy' ):
-		print "Warning: load_csv: 'out_type' should be one of",
-		print "'list' and 'numpy'. Assuming 'list'."
-		out_type = 'list'
 	
 	reader = csv.reader( open( file ), delimiter = delimiter )
 	
@@ -104,15 +89,7 @@ def load_csv(
 				row = cast_row
 			data.append( row[ : ] )
 	
-	if out_type == "list":
-		return data
-	else: # out_type == "numpy"
-		if found_numpy:
-			return numpy.array( data )
-		else:
-			print "Warning: load_csv: Did not find numpy package.",
-			print "Returning list of lists."
-			return data
+	return data
 
 def col( matrix, cols ):
 	if isinstance( cols, int ):
