@@ -33,12 +33,7 @@ def load_csv(
 	
 	Returns:
 		A 2-dimensional "array" containing a table read from the given file.
-		
-		The array is implemented as a list of lists by default. However, you can
-		request the return type to be a numpy array by setting the 'out_type'
-		parameter to "numpy". The datatype of this numpy array will usually be
-		the same as the type of casting requested. However if any of the entries
-		are None, then the datatype will be 'object'.
+		The array is implemented as a list of lists.
 	"""
 	if skip_empty_entries not in ( 'none', 'ends', 'all' ):
 		print "Warning: load_csv: 'skip_empty_entries' should be one of",
