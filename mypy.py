@@ -1,15 +1,22 @@
 import csv
+import os.path as path
+import subprocess
+
+def trash( src, dest ):
+	( head, tail ) = path.split( src )
+	if tail == '':
+		( head, tail ) = path.split( head )
 
 class ConversionError( Exception ):
 	pass
 
 def load_csv(
-	file, delimiter = '\t', comment = '', cast = str,
+	file_path, delimiter = '\t', comment = '', cast = str,
 	skip_empty_lines = False, skip_empty_entries = "none",
 	ignore_conversion_errors = False ):
 	"""
 	Args:
-		file: Path to file that needs to be loaded.
+		file_path: Path to file that needs to be loaded.
 		delimiter: Character separating fields.
 		comment: Line starting with characters in this string will be skipped.
 		skip_empty_lines: Empty lines will be skipped if true.
@@ -40,49 +47,50 @@ def load_csv(
 		print "'none', 'ends' and 'all'. Assuming 'none'."
 		skip_empty_entries = 'none'
 	
-	reader = csv.reader( open( file ), delimiter = delimiter )
-	
-	line = 0
-	data = []
-	for row in reader:
-		line = line + 1
+	with open( file_path ) as f:
+		reader = csv.reader( f, delimiter = delimiter )
 		
-		if len( row ) > 0 and len( row[ 0 ] ) > 0 and row[ 0 ][ 0 ] in comment:
-			continue
-		
-		if skip_empty_entries == "ends":
-			while len( row ) > 0 and row[ 0 ] == '':
-				del row[ 0 ]
-			while len( row ) > 0 and row[ -1 ] == '':
-				del row[ -1 ]
-		elif skip_empty_entries == "all":
-			for i in range( len( row ) - 1, -1, -1 ):
-				if row[ i ] == '':
-					del row[ i ]
-		
-		append = True
-		if len( row ) == 0:
-			if skip_empty_lines:
-				append = False
-		#~ elif len( row[ 0 ] ) > 0 and row[ 0 ][ 0 ] in comment:
-			#~ append = False
-		
-		if append:
-			if cast != str:
-				cast_row = []
-				for d in row:
-					try:
-						cast_row.append( cast( d ) if d != '' else None )
-					except ValueError as message:
-						if ignore_conversion_errors:
-							cast_row.append( None )
-						else:
-							print \
-								"Error loading csv file '" + file + "', line " + str( line ) + ":"
-							print message
-							raise ConversionError
-				row = cast_row
-			data.append( row[ : ] )
+		line = 0
+		data = []
+		for row in reader:
+			line = line + 1
+			
+			if len( row ) > 0 and len( row[ 0 ] ) > 0 and row[ 0 ][ 0 ] in comment:
+				continue
+			
+			if skip_empty_entries == "ends":
+				while len( row ) > 0 and row[ 0 ] == '':
+					del row[ 0 ]
+				while len( row ) > 0 and row[ -1 ] == '':
+					del row[ -1 ]
+			elif skip_empty_entries == "all":
+				for i in range( len( row ) - 1, -1, -1 ):
+					if row[ i ] == '':
+						del row[ i ]
+			
+			append = True
+			if len( row ) == 0:
+				if skip_empty_lines:
+					append = False
+			#~ elif len( row[ 0 ] ) > 0 and row[ 0 ][ 0 ] in comment:
+				#~ append = False
+			
+			if append:
+				if cast != str:
+					cast_row = []
+					for d in row:
+						try:
+							cast_row.append( cast( d ) if d != '' else None )
+						except ValueError as message:
+							if ignore_conversion_errors:
+								cast_row.append( None )
+							else:
+								print \
+									"Error loading csv file '" + file + "', line " + str( line ) + ":"
+								print message
+								raise ConversionError
+					row = cast_row
+				data.append( row[ : ] )
 	
 	return data
 
