@@ -86,7 +86,7 @@ def load_csv(
 								cast_row.append( None )
 							else:
 								print \
-									"Error loading csv file '" + file + "', line " + str( line ) + ":"
+									"Error loading csv file '" + file_path + "', line " + str( line ) + ":"
 								print message
 								raise ConversionError
 					row = cast_row
