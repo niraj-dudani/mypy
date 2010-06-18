@@ -1,6 +1,13 @@
 import csv
+import os
 import os.path as path
 import subprocess
+
+def require_dir( directory ):
+	if path.isfile( directory ):
+		raise ValueError( "'" + directory + "' is a file. Should be a directory." )
+	elif not path.isdir( directory ):
+		os.mkdir( directory )
 
 def trash( src, dest ):
 	( head, tail ) = path.split( src )
