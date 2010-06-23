@@ -151,7 +151,7 @@ def run_commands( command_list, log_file = 'run.log', file_mode = 'w' ):
 				break
 
 if __name__ == "__main__":
-	job_size = 1e7
+	job_size = 10 ** 7
 	n_jobs = 5
 	
 	def big( size ):
@@ -165,9 +165,8 @@ if __name__ == "__main__":
 		
 		t1 = time.strftime( "%H:%M:%S", time.localtime() )
 		
-		for i in range( int( size ** 0.5 ) ):
-			for j in range( int( size ** 0.5 ) ):
-				math.sin( 1.0 )
+		for i in xrange( size ):
+			math.sin( 1.0 )
 		
 		t2 = time.strftime( "%H:%M:%S", time.localtime() )
 		
