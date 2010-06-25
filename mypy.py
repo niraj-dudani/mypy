@@ -3,28 +3,55 @@ import os
 import os.path as path
 import subprocess
 
-try:
-	from IPython.kernel import client
-except ImportError:
-	iptc = None
-else:
-	import twisted
-	try:
-		iptc = client.TaskClient()
-	except twisted.internet.error.ConnectionRefusedError:
-		iptc = None
-
-def pmap( f, lst ):
-	if iptc:
-		return iptc.map( f, lst )
-	else:
-		return map( f, lst )
+#~ try:
+	#~ from IPython.kernel import client
+#~ except ImportError:
+	#~ iptc = None
+#~ else:
+	#~ import twisted
+	#~ try:
+		#~ iptc = client.TaskClient()
+	#~ except twisted.internet.error.ConnectionRefusedError:
+		#~ iptc = None
+#~ 
+#~ def _pmap( f, lst ):
+	#~ if iptc:
+		#~ return iptc.map( f, lst )
+	#~ else:
+		#~ return map( f, lst )
+#~ 
+#~ def pmap( f, lst, info = False ):
+	#~ if info:
+		#~ def g( x ):
+			#~ import time
+			#~ import os
+			#~ import socket
+			#~ 
+			host = socket.getfqdn() # Fully qualified domain name.
+			#~ host = socket.gethostname()
+			#~ pid = os.getpid()
+			#~ cwd = os.getcwd()
+			#~ 
+			#~ t1 = time.strftime( "%H:%M:%S", time.localtime() )
+			#~ y = f( x )
+			#~ t2 = time.strftime( "%H:%M:%S", time.localtime() )
+			#~ 
+			#~ return ( y, ( host, pid, cwd, t1, t2 ) )
+	#~ else:
+		#~ g = f
+	#~ 
+	#~ y = _pmap( g, lst )
+	#~ 
+	#~ if info:
+		#~ return zip( *y )
+	#~ else:
+		#~ return y
 
 def require_dir( directory ):
 	if path.isfile( directory ):
 		raise ValueError( "'" + directory + "' is a file. Should be a directory." )
 	elif not path.isdir( directory ):
-		os.mkdir( directory )
+		os.makedirs( directory )
 
 class ConversionError( Exception ):
 	pass
@@ -150,31 +177,25 @@ def run_commands( command_list, log_file = 'run.log', file_mode = 'w' ):
 			if status != 0:
 				break
 
-if __name__ == "__main__":
-	job_size = 10 ** 7
-	n_jobs = 5
-	
-	def big( size ):
-		import time
-		import os
-		import socket
-		import math
-		
-		host = socket.getfqdn()
-		pid = os.getpid()
-		
-		t1 = time.strftime( "%H:%M:%S", time.localtime() )
-		
-		for i in xrange( size ):
-			math.sin( 1.0 )
-		
-		t2 = time.strftime( "%H:%M:%S", time.localtime() )
-		
-		return ( host, pid, t1, t2 )
-	
-	d = pmap( big, ( job_size, ) * n_jobs )
-	
-	for ( n, i ) in enumerate( d ):
-		print '\n[', n, ']', 
-		for j in i:
-			print j,
+#~ if __name__ == "__main__":
+	#~ job_size = 10 ** 7
+	#~ n_jobs = 5
+	#~ 
+	#~ def big( size ):
+		#~ import math
+		#~ for i in xrange( size ):
+			#~ math.sin( 1.0 )
+		#~ return 1.0
+	#~ 
+	#~ d = pmap( big, ( job_size, ) * n_jobs, info = True )
+	#~ 
+	#~ print "Result:"
+	#~ print d[ 0 ]
+	#~ 
+	#~ print
+	#~ print "Info:"
+	#~ for ( n, i ) in enumerate( d[ 1 ] ):
+		#~ print '[', n, ']', 
+		#~ for j in i:
+			#~ print j,
+		#~ print
