@@ -27,7 +27,7 @@ import subprocess
 			#~ import os
 			#~ import socket
 			#~ 
-			host = socket.getfqdn() # Fully qualified domain name.
+			#~ # host = socket.getfqdn() # Fully qualified domain name.
 			#~ host = socket.gethostname()
 			#~ pid = os.getpid()
 			#~ cwd = os.getcwd()
