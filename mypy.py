@@ -47,6 +47,68 @@ import subprocess
 	#~ else:
 		#~ return y
 
+def movie(
+	frames,
+	movie_file,
+	blank_frame = None,
+	frame_delay = 25,
+	last_frame_delay = 100,
+	blank_delay = 100,
+	blank_position = 0 ):
+	"""
+	Takes images and puts them together into a movie.
+	
+	Args:
+		frames: Paths to image files.
+		movie_file: Path to output movie file.
+		blank_frame: Path to a special image file that can be inserted at any
+			point of the movie. Useful for giving a title frame, or an ending
+			frame.
+		frame_delay: Delay between movie frames, in milliseconds.
+		last_frame_delay: Delay for last frame in the movie, in milliseconds.
+		blank_delay: Delay for the special frame that is put at the end or
+			beginning of the movie.
+		blank_position: Position of the blank frame. 0 indicates beginning of
+			the movie. -1 indicates end. Other integers greater than 0 and less
+			than the number of frames can be used to indicate intermediate
+			positions.
+	
+	Notes:
+		Depends on the ImageMagick "convert" tool.
+	"""
+	import subprocess
+	tool = 'convert'
+	
+	try:
+		subprocess.call( tool, stdout = subprocess.PIPE )
+	except:
+		raise OSError( "Unable to execute tool 'convert'." )
+	
+	if len( frames ) == 0:
+		return
+	
+	command = frames[ : ]
+	
+	command.insert( 0, `frame_delay` )
+	command.insert( 0, '-delay' )
+	
+	command.insert( -1, '-delay' )
+	command.insert( -1, `last_frame_delay` )
+	
+	if blank_frame:
+		blank_args = ( '-delay', `blank_delay`, blank_frame )
+		if blank_position == -1:
+			command.extend( blank_args )
+		else:
+			command.insert( blank_position, blank_args[ 2 ] )
+			command.insert( blank_position, blank_args[ 1 ] )
+			command.insert( blank_position, blank_args[ 0 ] )
+	
+	command.insert( 0, tool )
+	command.append( movie_file )
+	
+	subprocess.call( command )
+
 def require_dir( directory ):
 	if path.isfile( directory ):
 		raise ValueError( "'" + directory + "' is a file. Should be a directory." )
