@@ -1,22 +1,38 @@
+#~ Not required since we are explicitly importing the modules below.
+#~ __all__ = [ 'analysis', 'pack' ]
+
+import curve
+
 import csv
 import os
 import os.path as path
 import subprocess
+import numpy
 
+def numpy_array( a ):
+	t = type( numpy.array( [ 1 ] ) )
+	if a == None:
+		return None
+	elif type( a ) == t:
+		return a
+	else:
+		return numpy.array( a )
+
+#~ _iptc = None
 #~ try:
 	#~ from IPython.kernel import client
 #~ except ImportError:
-	#~ iptc = None
+	#~ pass # _iptc = None
 #~ else:
 	#~ import twisted
 	#~ try:
-		#~ iptc = client.TaskClient()
+		#~ _iptc = client.TaskClient()
 	#~ except twisted.internet.error.ConnectionRefusedError:
-		#~ iptc = None
+		#~ pass # _iptc = None
 #~ 
-#~ def _pmap( f, lst ):
-	#~ if iptc:
-		#~ return iptc.map( f, lst )
+#~ def pmap( f, lst ):
+	#~ if _iptc:
+		#~ return _iptc.map( f, lst )
 	#~ else:
 		#~ return map( f, lst )
 #~ 
