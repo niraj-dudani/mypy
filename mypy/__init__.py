@@ -1,6 +1,3 @@
-#~ Not required since we are explicitly importing the modules below.
-#~ __all__ = [ 'analysis', 'pack' ]
-
 import curve
 
 import csv
@@ -254,6 +251,77 @@ def run_commands( command_list, log_file = 'run.log', file_mode = 'w' ):
 			
 			if status != 0:
 				break
+
+from scipy import optimize
+
+def __residuals( p, f, y, x ):
+	try:
+		return [ yi - f( xi, p ) for ( yi, xi ) in zip( y, x ) ]
+	except OverflowError:
+		global dirty
+		dirty = 1
+		return [ 0 for ( yi, xi ) in zip( y, x ) ]
+
+def __objective( p, f, y, x ):
+	return sum( [ e * e for e in __residuals( p, f, y, x ) ] )
+
+def fit( f, y, x, p0, method = 'lm', display = 0 ) :
+	"""
+	Fits a given function to the given data.
+	
+	Args:
+		f: Function to fit. Should take 'x' as first argument, and a sequence of
+		parameters as the second.
+		
+		y: Sequence containing y values
+		
+		x: Sequence containing x values
+		
+		p0: Initial guess
+		
+		method: Optimization algorithm. Possible values:
+			'lm': Modified Levenberg-Marquardt algorithm (default)
+			'nm': Nelder-Mead Simplex algorithm
+			'pw': Modified Powell's method
+			'pr': Nonlinear conjugate gradient algorithm of Polak and Ribiere
+			'bfgs': Quasi-Newton method of Broyden, Fletcher, Goldfarb, and Shanno
+			'anneal': Simulated annealing
+			'brute': brute-force
+	"""
+	
+	methods = ( 'lm', 'nm', 'pw', 'pr', 'bfgs', 'anneal', 'brute' )
+	if method not in methods:
+		print "Warning: fit: 'method' should be one of", methods
+		print "Falling back to 'lm'."
+		method = 'lm'
+	
+	if method == 'lm':
+		global dirty
+		dirty = 0
+		
+		result = optimize.leastsq( __residuals, p0, args = ( f, y, x ), warning = display )
+		
+		if dirty == 1:
+			raise OverflowError
+		
+		result = result[ 0 ]
+	elif method == 'nm':
+		result = optimize.fmin( __objective, p0, args = ( f, y, x ), disp = display )
+	elif method == 'pw':
+		result = optimize.fmin_powell( __objective, p0, args = ( f, y, x ), disp = display )
+	elif method == 'pr':
+		result = optimize.fmin_cg( __objective, p0, args = ( f, y, x ), disp = display )
+	elif method == 'bfgs':
+		result = optimize.fmin_bfgs( __objective, p0, args = ( f, y, x ), disp = display )
+	elif method == 'anneal':
+		lower = [ 0, 0, 0, 0 ]
+		upper = [ 200, 1000, 200, 1000 ]
+		result = anneal( __objective, p0, args = ( f, y, x ), lower = lower, upper = upper )
+		result = result[ 0 ]
+	else:
+		result = brute( __objective, p0, args = ( f, y, x ) )
+	
+	return result
 
 #~ if __name__ == "__main__":
 	#~ job_size = 10 ** 7
